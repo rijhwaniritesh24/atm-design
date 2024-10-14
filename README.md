@@ -52,7 +52,6 @@ This ATM Monitoring API runs on ATM devices and is accessible by other applicati
 ## Activity Flow Diagrams
 
 ### 1. **Transaction Logging Flow**
-```mermaid
 
     A[Customer] -->|Uses ATM| B[ATM Device]
     B --> C[Transaction]
@@ -63,11 +62,10 @@ This ATM Monitoring API runs on ATM devices and is accessible by other applicati
     C --> E
     E --> G
     G --> F
-    
- ```
+ 
  
 ### 2. **Failure Monitoring Flow**
-   ```mermaid
+   
     A[ATM Device] -->|Failure Detected| B[Failure Service]
     B --> C[Database]
     C --> D[Failure Log]
@@ -76,7 +74,7 @@ This ATM Monitoring API runs on ATM devices and is accessible by other applicati
     B --> C
     C --> F
     F --> E
-```
+
 ### 3. **Camera Footage Retrieval**
 
       A[ATM Camera] -->|Footage Captured| B[Camera Service]
