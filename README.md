@@ -3,7 +3,7 @@
 This project provides an API that securely monitors the status and behavior of ATMs within a bank’s network in real-time. The API handles customer transactions, failure monitoring, and camera footage retrieval. It is built using **Java Spring Boot** and follows the **OpenAPI Specification 3.1**.
 
 
-![ATM Monitoring System Diagram](src/main/resources/Untitled Diagram.drawio.png)
+![ATM Monitoring System Diagram](src/main/resources/Untitled_Diagram.drawio.png)
 
 ## Table of Contents
 - [System Overview](#system-overview)
