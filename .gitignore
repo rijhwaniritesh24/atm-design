@@ -39,65 +39,58 @@ out/
 
 #!/bin/bash
 
-# Path to your JaCoCo XML report
-XML_FILE="path/to/your/jacoco.xml"
+# --- Configuration (EDIT THESE) ---
+CSV_FILE="path/to/your/coverage.csv"  # **REPLACE with your CSV file path**
+# JACOC_REPORT_DIR="path/to/your/jacoco/report" # Not used in this version, but keep it if you might use it later
+OUTPUT_FILE="path/to/your/summary.txt"  # Optional: Output file path, or leave empty for stdout
 
-# Check if the file exists
-if [ ! -f "$XML_FILE" ]; then
-  echo "Error: File not found: $XML_FILE"
-  exit 1
+# --- Functions ---
+
+calculate_percentage() {
+  lines_covered="$1"
+  lines_total="$2"
+  if [[ "$lines_total" -eq 0 ]]; then
+    echo "0.00%"
+  else
+    percentage=$(bc <<< "scale=2; ($lines_covered / $lines_total) * 100")
+    echo "${percentage}%"
+  fi
+}
+
+# --- Main Script ---
+
+# Initialize counters
+total_missed=0
+total_covered=0
+total_lines=0
+
+# CSV Parsing (adjust field numbers if your CSV is different)
+while IFS=',' read -r group package class missed covered total coverage; do
+  total_missed=$((total_missed + missed))
+  total_covered=$((total_covered + covered))
+  total_lines=$((total_lines + total))
+done < "$CSV_FILE"
+
+# Calculate overall coverage
+overall_percentage=$(calculate_percentage "$total_covered" "$total_lines")
+
+# Summary String (Table Format)
+summary=""
+summary+="---------------------------------\n"
+summary+="| Metric          | Value       |\n"
+summary+="---------------------------------\n"
+summary+="| Lines Covered   | $total_covered    |\n"
+summary+="| Lines Missed    | $total_missed     |\n"
+summary+="| Total Lines     | $total_lines      |\n"
+summary+="| Overall Coverage| $overall_percentage |\n"
+summary+="---------------------------------\n"
+
+# Output
+if [[ -n "$OUTPUT_FILE" ]]; then
+  echo "$summary" > "$OUTPUT_FILE"
+  echo "Summary written to: $OUTPUT_FILE"
+else
+  echo "$summary"
 fi
 
-# Function to extract coverage data for a specific type
-extract_coverage() {
-  TYPE="$1"
-  COVERED=$(grep -oP "<counter type=\"$TYPE\" covered=\"\K[0-9]+" "$XML_FILE")
-  MISSED=$(grep -oP "<counter type=\"$TYPE\" missed=\"\K[0-9]+" "$XML_FILE")
-
-  # Handle cases where grep might not find a match
-  COVERED="${COVERED:-0}"
-  MISSED="${MISSED:-0}"
-
-  TOTAL=$((COVERED + MISSED))
-  PERCENTAGE=0  # Initialize to avoid potential errors
-
-  if [[ "$TOTAL" -gt 0 ]]; then
-    PERCENTAGE=$(bc <<< "scale=2; $COVERED / $TOTAL * 100") # Floating-point calculation
-  fi
-
-  echo "$TYPE:"
-  echo "  Covered: $COVERED"
-  echo "  Missed: $MISSED"
-  echo "  Total: $TOTAL"
-  echo "  Percentage: $PERCENTAGE%"
-  echo "--------------------"
-}
-
-echo "JaCoCo Coverage Report:"
-
-# Extract coverage for multiple types
-for type in instruction branch line complexity method class; do
-  extract_coverage "$type"
-done
-
-# Calculate overall coverage percentages
-calculate_percentage() {
-  TYPE="$1"
-  COVERED=$(grep -oP "<counter type=\"$TYPE\" covered=\"\K[0-9]+" "$XML_FILE")
-  MISSED=$(grep -oP "<counter type=\"$TYPE\" missed=\"\K[0-9]+" "$XML_FILE")
-
-  COVERED="${COVERED:-0}"
-  MISSED="${MISSED:-0}"
-  TOTAL=$((COVERED + MISSED))
-
-  PERCENTAGE=0
-  if [[ "$TOTAL" -gt 0 ]]; then
-    PERCENTAGE=$(bc <<< "scale=2; $COVERED / $TOTAL * 100")
-  fi
-
-  echo "$TYPE Coverage Percentage: ${PERCENTAGE}%"
-}
-
-calculate_percentage "instruction"
-calculate_percentage "branch"
-calculate_percentage "line"
+exit 0
