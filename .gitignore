@@ -37,60 +37,87 @@ out/
 .vscode/
 
 
-#!/bin/bash
+const fs = require('fs');
+const core = require('@actions/core');
 
-# --- Configuration (EDIT THESE) ---
-CSV_FILE="path/to/your/coverage.csv"  # **REPLACE with your CSV file path**
-# JACOC_REPORT_DIR="path/to/your/jacoco/report" # Not used in this version, but keep it if you might use it later
-OUTPUT_FILE="path/to/your/summary.txt"  # Optional: Output file path, or leave empty for stdout
+function parseJacocoCSV(filePath) {
+    const data = fs.readFileSync(filePath, 'utf8');
+    const lines = data.split('\n').slice(1); // Skip the header line
 
-# --- Functions ---
+    let totalLines = 0, coveredLines = 0;
+    let totalBranches = 0, coveredBranches = 0;
+    let totalMethods = 0, coveredMethods = 0;
 
-calculate_percentage() {
-  lines_covered="$1"
-  lines_total="$2"
-  if [[ "$lines_total" -eq 0 ]]; then
-    echo "0.00%"
-  else
-    percentage=$(bc <<< "scale=2; ($lines_covered / $lines_total) * 100")
-    echo "${percentage}%"
-  fi
+    for (const line of lines) {
+        if (!line.trim()) continue;
+        const columns = line.split(',');
+
+        // Adjust column indexes based on JaCoCo CSV format
+        const coveredInstr = parseInt(columns[3], 10);
+        const totalInstr = parseInt(columns[4], 10);
+        const coveredBr = parseInt(columns[5], 10);
+        const totalBr = parseInt(columns[6], 10);
+        const coveredMth = parseInt(columns[7], 10);
+        const totalMth = parseInt(columns[8], 10);
+
+        coveredLines += coveredInstr;
+        totalLines += totalInstr;
+        coveredBranches += coveredBr;
+        totalBranches += totalBr;
+        coveredMethods += coveredMth;
+        totalMethods += totalMth;
+    }
+
+    const lineCoverage = totalLines ? ((coveredLines / totalLines) * 100).toFixed(2) : 'N/A';
+    const branchCoverage = totalBranches ? ((coveredBranches / totalBranches) * 100).toFixed(2) : 'N/A';
+    const methodCoverage = totalMethods ? ((coveredMethods / totalMethods) * 100).toFixed(2) : 'N/A';
+
+    return { lineCoverage, branchCoverage, methodCoverage };
 }
 
-# --- Main Script ---
+async function run() {
+    try {
+        const jacocoReportPath = 'jacoco.csv'; // Set the path to your JaCoCo CSV file
+        const coverage = parseJacocoCSV(jacocoReportPath);
 
-# Initialize counters
-total_missed=0
-total_covered=0
-total_lines=0
+        const message = `
+### 📊 JaCoCo Test Coverage Report
+- **Line Coverage:** ${coverage.lineCoverage}%
+- **Branch Coverage:** ${coverage.branchCoverage}%
+- **Method Coverage:** ${coverage.methodCoverage}%
+`;
 
-# CSV Parsing (adjust field numbers if your CSV is different)
-while IFS=',' read -r group package class missed covered total coverage; do
-  total_missed=$((total_missed + missed))
-  total_covered=$((total_covered + covered))
-  total_lines=$((total_lines + total))
-done < "$CSV_FILE"
+        console.log(message);
 
-# Calculate overall coverage
-overall_percentage=$(calculate_percentage "$total_covered" "$total_lines")
+        // Post a comment on the PR (if available)
+        if (github.context.payload.pull_request) {
+            const prNumber = github.context.payload.pull_request.number;
+            await github.rest.issues.createComment({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                issue_number: prNumber,
+                body: message,
+            });
+        }
 
-# Summary String (Table Format)
-summary=""
-summary+="---------------------------------\n"
-summary+="| Metric          | Value       |\n"
-summary+="---------------------------------\n"
-summary+="| Lines Covered   | $total_covered    |\n"
-summary+="| Lines Missed    | $total_missed     |\n"
-summary+="| Total Lines     | $total_lines      |\n"
-summary+="| Overall Coverage| $overall_percentage |\n"
-summary+="---------------------------------\n"
+        // Set outputs for GitHub Actions
+        core.setOutput("lineCoverage", coverage.lineCoverage);
+        core.setOutput("branchCoverage", coverage.branchCoverage);
+        core.setOutput("methodCoverage", coverage.methodCoverage);
+    } catch (error) {
+        core.setFailed(`Error: ${error.message}`);
+    }
+}
 
-# Output
-if [[ -n "$OUTPUT_FILE" ]]; then
-  echo "$summary" > "$OUTPUT_FILE"
-  echo "Summary written to: $OUTPUT_FILE"
-else
-  echo "$summary"
-fi
+run();
 
-exit 0
+
+
+
+name: Analyze Coverage
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./script.js');
+            script();
+
