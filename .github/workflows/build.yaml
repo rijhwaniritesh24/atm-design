@@ -10,4 +10,4 @@ on:
 
 jobs:
   build-reuse:
-      uses: rijhwaniritesh24/action-test@main
+      uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
