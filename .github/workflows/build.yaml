@@ -1,13 +1,4 @@
-name: Java CI Workflow
-
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-
+on: [push]
 
 jobs:
   hello_world_job:
