@@ -8,27 +8,20 @@ on:
     branches:
       - master
 
+
 jobs:
-  build:
+  hello_world_job:
     runs-on: ubuntu-latest
+    name: A job to say hello
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - id: foo
+        uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          who-to-greet: 'Mona the Octocat'
+      - run: echo random-number "$RANDOM_NUMBER"
+        shell: bash
+        env:
+          RANDOM_NUMBER: ${{ steps.foo.outputs.random-number }}
 
-      - name: Grant execute permission for Gradle
-        run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew build
-
-  build-reuse:
-    uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
-    with:
-    # Define any inputs required by the reusable workflow here
-    secrets: inherit # If the reusable workflow requires secrets
