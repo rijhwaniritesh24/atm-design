@@ -1,13 +1,60 @@
-name: Java CI with Gradle
+#name: Java CI with Gradle
+#
+#on:
+#  push:
+#    branches:
+#      - master
+#  pull_request:
+#    branches:
+#      - master
+#
+#jobs:
+#  build-reuse:
+#      uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
+
+
+name: Java CI Workflow
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  workflow_call:
+
 
 jobs:
-  build-reuse:
-      uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x gradlew
+
+      - name: Run Tests and Generate Coverage Report
+        run: ./gradlew test jacocoTestReport
+
+      - name: Verify test
+        uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
