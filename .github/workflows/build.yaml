@@ -1,18 +1,3 @@
-#name: Java CI with Gradle
-#
-#on:
-#  push:
-#    branches:
-#      - master
-#  pull_request:
-#    branches:
-#      - master
-#
-#jobs:
-#  build-reuse:
-#      uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
-
-
 name: Java CI Workflow
 
 on:
@@ -22,7 +7,6 @@ on:
   pull_request:
     branches:
       - master
-
 
 jobs:
   build:
@@ -44,7 +28,7 @@ jobs:
         run: ./gradlew build
 
   build-reuse:
-    runs-on: ubuntu-latest
-    steps:
-      - name: A job to say hello
-        uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
+    uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
+    with:
+    # Define any inputs required by the reusable workflow here
+    secrets: inherit # If the reusable workflow requires secrets
