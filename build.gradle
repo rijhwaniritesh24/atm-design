@@ -2,11 +2,29 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.4'
 	id 'io.spring.dependency-management' version '1.1.6'
+	id 'jacoco'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
+jacoco {
+	toolVersion = "0.8.7"  // Specify the JaCoCo version if needed
+}
 
+
+test {
+	useJUnitPlatform() // Ensures compatibility with JUnit 5
+	finalizedBy jacocoTestReport // Ensures coverage report is generated after tests
+}
+
+jacocoTestReport {
+	dependsOn test // Runs tests before generating the report
+	reports {
+		xml.required = true
+		csv.required = true
+		html.required = true
+	}
+}
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
