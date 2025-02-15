@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: foo
-        uses: rijhwaniritesh24/action-test/java-ci@main
+        uses: rijhwaniritesh24/action-test/.github/actions/java-ci/action.yaml@main
         with:
           who-to-greet: 'Mona the Octocat'
       - run: echo random-number "$RANDOM_NUMBER"
