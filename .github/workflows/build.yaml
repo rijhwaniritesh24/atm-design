@@ -51,4 +51,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Java CI Workflow Action
-        uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
+        uses: rijhwaniritesh24/action-test/.github/actions/action.yaml@main
