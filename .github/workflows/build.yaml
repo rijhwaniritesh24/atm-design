@@ -44,6 +44,5 @@ jobs:
         run: ./gradlew build
 
   java-ci:
-    runs-on: ubuntu-latest
     needs: build
     uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
