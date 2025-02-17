@@ -47,8 +47,5 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
       - name: Run Java CI Workflow Action
         uses: rijhwaniritesh24/action-test/.github/workflows/action.yaml@main
